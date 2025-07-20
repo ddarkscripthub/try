@@ -1,1 +1,100 @@
-loadstring(game:HttpGet("https://paste.ee/r/BI2ybZAV"))()
+-- SERVICES
+local players = game:GetService("Players")
+local collectionService = game:GetService("CollectionService")
+local localPlayer = players.LocalPlayer or players:GetPlayers()[1]
+local espEnabled = true
+
+-- DATA
+local eggChances = {
+    ["Common Egg"] = {["Dog"] = 33, ["Bunny"] = 33, ["Golden Lab"] = 33},
+    ["Uncommon Egg"] = {["Black Bunny"] = 25, ["Chicken"] = 25, ["Cat"] = 25, ["Deer"] = 25},
+    ["Primal Egg"] = {["Parasaurolophus"] = 35, ["Iguanodon"] = 32.5, ["Pachycephalosaurus"] = 28, ["Dilophosaurus"] = 3, ["Ankylosaurus"] = 1, ["Spinosaurus"] = 0},
+    ["Legendary Egg"] = {["Cow"] = 42.55, ["Silver Monkey"] = 42.55, ["Sea Otter"] = 10.64, ["Turtle"] = 2.13, ["Polar Bear"] = 2.13},
+    ["Mythical Egg"] = {["Grey Mouse"] = 37.5, ["Brown Mouse"] = 26.79, ["Squirrel"] = 26.79, ["Red Giant Ant"] = 8.93, ["Red Fox"] = 0},
+    ["Bug Egg"] = {["Snail"] = 40, ["Giant Ant"] = 35, ["Caterpillar"] = 25, ["Praying Mantis"] = 0, ["Dragon Fly"] = 0},
+    ["Night Egg"] = {["Hedgehog"] = 47, ["Mole"] = 23.5, ["Frog"] = 21.16, ["Echo Frog"] = 8.35, ["Night Owl"] = 0, ["Raccoon"] = 0},
+    ["Bee Egg"] = {["Bee"] = 65, ["Honey Bee"] = 20, ["Bear Bee"] = 10, ["Petal Bee"] = 5, ["Queen Bee"] = 0},
+    ["Anti Bee Egg"] = {["Wasp"] = 55, ["Tarantula Hawk"] = 31, ["Moth"] = 14, ["Butterfly"] = 0, ["Disco Bee"] = 0},
+    ["Dinosaur Egg"] = {["Raptor"] = 35, ["Triceratops"] = 32.5, ["Stegosaurus"] = 28, ["Pterodactyl"] = 3, ["Brontosaurus"] = 0, ["T-Rex"] = 0},
+    ["Rare Summer Egg"] = {["Flamingo"] = 30, ["Toucan"] = 25, ["Sea Turtle"] = 20, ["Orangutan"] = 15, ["Seal"] = 10},
+    ["Paradise Egg"] = {["Ostrich"] = 43, ["Peacock"] = 33, ["Capybara"] = 24, ["Scarlet Macaw"] = 3, ["Mimic Octopus"] = 0},
+    ["Premium Night Egg"] = {["Hedgehog"] = 50, ["Mole"] = 26, ["Frog"] = 14, ["Echo Frog"] = 10},
+}
+
+local displayedEggs = {}
+local cooldown = 5
+local canClick = true
+local autoReroll = false
+
+-- Get a pet for egg
+local function getPetForEgg(eggName)
+    local pets = eggChances[eggName]
+    if not pets then return "?" end
+    local valid = {}
+    for pet, chance in pairs(pets) do
+        if chance > 0 then table.insert(valid, pet) end
+    end
+    return #valid > 0 and valid[math.random(1, #valid)] or "?"
+end
+
+-- ESP GUI
+local function createEspGui(object, labelText)
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "PetESP"
+    billboard.AlwaysOnTop = true
+    billboard.Size = UDim2.new(0, 200, 0, 50)
+    billboard.StudsOffset = Vector3.new(0, 2.5, 0)
+    billboard.Adornee = object
+    local label = Instance.new("TextLabel", billboard)
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.fromRGB(255, 255, 0)
+    label.TextScaled = false
+    label.Font = Enum.Font.Arcade
+    label.TextSize = 13
+    label.Text = labelText
+    billboard.Parent = game:GetService("CoreGui")
+    return billboard
+end
+
+-- Add ESP
+local function addESP(egg, eggName, petName)
+    if not espEnabled then return end
+    local adornee = egg:FindFirstChildWhichIsA("BasePart") or egg.PrimaryPart
+    if adornee then
+        local gui = createEspGui(adornee, eggName .. " | " .. petName)
+        local aura = Instance.new("SelectionBox")
+        aura.Name = "RedAura"
+        aura.Adornee = adornee
+        aura.LineThickness = 0.1
+        aura.SurfaceTransparency = 0.7
+        aura.Color3 = Color3.fromRGB(255, 0, 0)
+        aura.Parent = adornee
+
+        displayedEggs[egg] = {
+            egg = egg,
+            gui = gui,
+            label = gui:FindFirstChild("TextLabel"),
+            selectionBox = aura,
+            eggName = eggName,
+            currentPet = petName
+        }
+    end
+end
+
+-- Remove ESP
+local function removeESP(egg)
+    local data = displayedEggs[egg]
+    if data then
+        if data.gui then data.gui:Destroy() end
+        if data.selectionBox then data.selectionBox:Destroy() end
+        displayedEggs[egg] = nil
+    end
+end
+
+-- CONNECT TO TAGGED EGGS
+for _, egg in collectionService:GetTagged("PetEggServer") do
+    local eggName = egg:GetAttribute("EggName") or "Unknown Egg"
+    local petName = getPetForEgg(eggName)
+    addESP(egg, eggName, petName)
+end
