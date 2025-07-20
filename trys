@@ -1,100 +1,242 @@
--- SERVICES
-local players = game:GetService("Players")
-local collectionService = game:GetService("CollectionService")
-local localPlayer = players.LocalPlayer or players:GetPlayers()[1]
-local espEnabled = true
-
--- DATA
-local eggChances = {
-    ["Common Egg"] = {["Dog"] = 33, ["Bunny"] = 33, ["Golden Lab"] = 33},
-    ["Uncommon Egg"] = {["Black Bunny"] = 25, ["Chicken"] = 25, ["Cat"] = 25, ["Deer"] = 25},
-    ["Primal Egg"] = {["Parasaurolophus"] = 35, ["Iguanodon"] = 32.5, ["Pachycephalosaurus"] = 28, ["Dilophosaurus"] = 3, ["Ankylosaurus"] = 1, ["Spinosaurus"] = 0},
-    ["Legendary Egg"] = {["Cow"] = 42.55, ["Silver Monkey"] = 42.55, ["Sea Otter"] = 10.64, ["Turtle"] = 2.13, ["Polar Bear"] = 2.13},
-    ["Mythical Egg"] = {["Grey Mouse"] = 37.5, ["Brown Mouse"] = 26.79, ["Squirrel"] = 26.79, ["Red Giant Ant"] = 8.93, ["Red Fox"] = 0},
-    ["Bug Egg"] = {["Snail"] = 40, ["Giant Ant"] = 35, ["Caterpillar"] = 25, ["Praying Mantis"] = 0, ["Dragon Fly"] = 0},
-    ["Night Egg"] = {["Hedgehog"] = 47, ["Mole"] = 23.5, ["Frog"] = 21.16, ["Echo Frog"] = 8.35, ["Night Owl"] = 0, ["Raccoon"] = 0},
-    ["Bee Egg"] = {["Bee"] = 65, ["Honey Bee"] = 20, ["Bear Bee"] = 10, ["Petal Bee"] = 5, ["Queen Bee"] = 0},
-    ["Anti Bee Egg"] = {["Wasp"] = 55, ["Tarantula Hawk"] = 31, ["Moth"] = 14, ["Butterfly"] = 0, ["Disco Bee"] = 0},
-    ["Dinosaur Egg"] = {["Raptor"] = 35, ["Triceratops"] = 32.5, ["Stegosaurus"] = 28, ["Pterodactyl"] = 3, ["Brontosaurus"] = 0, ["T-Rex"] = 0},
-    ["Rare Summer Egg"] = {["Flamingo"] = 30, ["Toucan"] = 25, ["Sea Turtle"] = 20, ["Orangutan"] = 15, ["Seal"] = 10},
-    ["Paradise Egg"] = {["Ostrich"] = 43, ["Peacock"] = 33, ["Capybara"] = 24, ["Scarlet Macaw"] = 3, ["Mimic Octopus"] = 0},
-    ["Premium Night Egg"] = {["Hedgehog"] = 50, ["Mole"] = 26, ["Frog"] = 14, ["Echo Frog"] = 10},
+local v0 = game:GetService("Players")
+local v1 = game:GetService("CollectionService")
+local v2 = v0.LocalPlayer or v0:GetPlayers()[1]
+local v3 = true
+local v4 = {
+["Common Egg"] = {["Dog"] = 33, ["Bunny"] = 33, ["Golden Lab"] = 33},
+["Uncommon Egg"] = {["Black Bunny"] = 25, ["Chicken"] = 25, ["Cat"] = 25, ["Deer"] = 25},
+["Primal Egg"] = {["Parasaurolophus"] = 35, ["Iguanodon"] = 32.5, ["Pachycephalosaurus"] = 28, ["Dilophosaurus"] = 3, ["Ankylosaurus"] = 1, ["Spinosaurus"] = 0},
+["Legendary Egg"] = {["Cow"] = 42.55, ["Silver Monkey"] = 42.55, ["Sea Otter"] = 10.64, ["Turtle"] = 2.13, ["Polar Bear"] = 2.13},
+["Mythical Egg"] = {["Grey Mouse"] = 37.5, ["Brown Mouse"] = 26.79, ["Squirrel"] = 26.79, ["Red Giant Ant"] = 8.93, ["Red Fox"] = 0},
+["Bug Egg"] = {["Snail"] = 40, ["Giant Ant"] = 35, ["Caterpillar"] = 25, ["Praying Mantis"] = 0, ["Dragon Fly"] = 0},
+["Night Egg"] = {["Hedgehog"] = 47, ["Mole"] = 23.5, ["Frog"] = 21.16, ["Echo Frog"] = 8.35, ["Night Owl"] = 0, ["Raccoon"] = 0},
+["Bee Egg"] = {["Bee"] = 65, ["Honey Bee"] = 20, ["Bear Bee"] = 10, ["Petal Bee"] = 5, ["Queen Bee"] = 0},
+["Anti Bee Egg"] = {["Wasp"] = 55, ["Tarantula Hawk"] = 31, ["Moth"] = 14, ["Butterfly"] = 0, ["Disco Bee"] = 0},
+["Dinosaur Egg"] = {["Raptor"] = 35, ["Triceratops"] = 32.5, ["Stegosaurus"] = 28, ["Pterodactyl"] = 3, ["Brontosaurus"] = 0, ["T-Rex"] = 0},
+["Rare Summer Egg"] = {["Flamingo"] = 30, ["Toucan"] = 25, ["Sea Turtle"] = 20, ["Orangutan"] = 15, ["Seal"] = 10},
+["Paradise Egg"] = {["Ostrich"] = 43, ["Peacock"] = 33, ["Capybara"] = 24, ["Scarlet Macaw"] = 3, ["Mimic Octopus"] = 0},
+["Premium Night Egg"] = {["Hedgehog"] = 50, ["Mole"] = 26, ["Frog"] = 14, ["Echo Frog"] = 10},
 }
-
-local displayedEggs = {}
-local cooldown = 5
-local canClick = true
-local autoReroll = false
-
--- Get a pet for egg
-local function getPetForEgg(eggName)
-    local pets = eggChances[eggName]
-    if not pets then return "?" end
-    local valid = {}
-    for pet, chance in pairs(pets) do
-        if chance > 0 then table.insert(valid, pet) end
-    end
-    return #valid > 0 and valid[math.random(1, #valid)] or "?"
+local v5 = {}
+local v6 = 5
+local v7 = true
+local v8 = false
+local function getPetForEgg(v17)
+local v9 = v4[v17]
+if not v9 then return "?" end
+local v10 = {}
+for pet, chance in pairs(v9) do
+if chance > 0 then table.insert(v10, pet) end
 end
-
--- ESP GUI
+return #v10 > 0 and v10[math.random(1, #v10)] or "?"
+end
 local function createEspGui(object, labelText)
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "PetESP"
-    billboard.AlwaysOnTop = true
-    billboard.Size = UDim2.new(0, 200, 0, 50)
-    billboard.StudsOffset = Vector3.new(0, 2.5, 0)
-    billboard.Adornee = object
-    local label = Instance.new("TextLabel", billboard)
-    label.Size = UDim2.new(1, 0, 1, 0)
-    label.BackgroundTransparency = 1
-    label.TextColor3 = Color3.fromRGB(255, 255, 0)
-    label.TextScaled = false
-    label.Font = Enum.Font.Arcade
-    label.TextSize = 13
-    label.Text = labelText
-    billboard.Parent = game:GetService("CoreGui")
-    return billboard
+local v11 = Instance.new("BillboardGui")
+v11.Name = "PetESP"
+v11.AlwaysOnTop = true
+v11.Size = UDim2.new(0, 200, 0, 50)
+v11.StudsOffset = Vector3.new(0, 2.5, 0)
+v11.Adornee = object
+local v12 = Instance.new("TextLabel", v11)
+v12.Size = UDim2.new(1, 0, 1, 0)
+v12.BackgroundTransparency = 1
+v12.TextColor3 = Color3.fromRGB(255, 255, 0)
+v12.TextScaled = false
+v12.Font = Enum.Font.Arcade
+v12.TextSize = 13
+v12.Text = labelText
+v11.Parent = game:GetService("CoreGui")
+return v11
 end
-
--- Add ESP
-local function addESP(egg, eggName, petName)
-    if not espEnabled then return end
-    local adornee = egg:FindFirstChildWhichIsA("BasePart") or egg.PrimaryPart
-    if adornee then
-        local gui = createEspGui(adornee, eggName .. " | " .. petName)
-        local aura = Instance.new("SelectionBox")
-        aura.Name = "RedAura"
-        aura.Adornee = adornee
-        aura.LineThickness = 0.1
-        aura.SurfaceTransparency = 0.7
-        aura.Color3 = Color3.fromRGB(255, 0, 0)
-        aura.Parent = adornee
-
-        displayedEggs[egg] = {
-            egg = egg,
-            gui = gui,
-            label = gui:FindFirstChild("TextLabel"),
-            selectionBox = aura,
-            eggName = eggName,
-            currentPet = petName
-        }
-    end
+local function addESP(egg, v17, v18)
+if not v3 then return end
+local v13 = egg:FindFirstChildWhichIsA("BasePart") or egg.PrimaryPart
+if v13 then
+local v14 = createEspGui(v13, v17 .. " | " .. v18)
+local v15 = Instance.new("SelectionBox")
+v15.Name = "RedAura"
+v15.Adornee = v13
+v15.LineThickness = 0.1
+v15.SurfaceTransparency = 0.7
+v15.Color3 = Color3.fromRGB(255, 0, 0)
+v15.Parent = v13
+v5[egg] = {
+egg = egg,
+v14 = v14,
+v12 = v14:FindFirstChild("TextLabel"),
+selectionBox = v15,
+v17 = v17,
+currentPet = v18
+}
 end
-
--- Remove ESP
+end
 local function removeESP(egg)
-    local data = displayedEggs[egg]
-    if data then
-        if data.gui then data.gui:Destroy() end
-        if data.selectionBox then data.selectionBox:Destroy() end
-        displayedEggs[egg] = nil
-    end
+local v16 = v5[egg]
+if v16 then
+if v16.v14 then v16.v14:Destroy() end
+if v16.selectionBox then v16.selectionBox:Destroy() end
+v5[egg] = nil
 end
-
--- CONNECT TO TAGGED EGGS
-for _, egg in collectionService:GetTagged("PetEggServer") do
-    local eggName = egg:GetAttribute("EggName") or "Unknown Egg"
-    local petName = getPetForEgg(eggName)
-    addESP(egg, eggName, petName)
 end
+for _, egg in v1:GetTagged("PetEggServer") do
+local v17 = egg:GetAttribute("EggName") or "Unknown Egg"
+local v18 = getPetForEgg(v17)
+addESP(egg, v17, v18)
+end
+v1:GetInstanceAddedSignal("PetEggServer"):Connect(function(egg)
+local v17 = egg:GetAttribute("EggName") or "Unknown Egg"
+local v18 = getPetForEgg(v17)
+addESP(egg, v17, v18)
+end)
+v1:GetInstanceRemovedSignal("PetEggServer"):Connect(removeESP)
+local v14 = Instance.new("ScreenGui", v2:WaitForChild("PlayerGui"))
+v14.Name = "PetPredictorUI"
+v14.ResetOnSpawn = false
+local v19 = Instance.new("Frame", v14)
+v19.Size = UDim2.new(0, 260, 0, 200)
+v19.Position = UDim2.new(0.5, -130, 0.3, 0)
+v19.BackgroundColor3 = Color3.fromRGB(30, 20, 50)
+v19.BorderSizePixel = 0
+v19.Active = true
+v19.Draggable = true
+Instance.new("UICorner", v19).CornerRadius = UDim.new(0, 4)
+local v20 = Instance.new("TextLabel", v19)
+v20.Size = UDim2.new(1, -30, 0, 30)
+v20.Position = UDim2.new(0, 10, 0, 6)
+v20.BackgroundTransparency = 1
+v20.Text = "ðŸ¥š Egg Randomizer"
+v20.TextColor3 = Color3.fromRGB(170, 255, 170)
+v20.Font = Enum.Font.Arcade
+v20.TextSize = 20
+v20.TextXAlignment = Enum.TextXAlignment.Left
+local v21 = Instance.new("TextButton", v19)
+v21.Size = UDim2.new(0, 24, 0, 24)
+v21.Position = UDim2.new(1, -30, 0, 10)
+v21.Text = "X"
+v21.TextColor3 = Color3.new(1, 1, 1)
+v21.BackgroundColor3 = Color3.fromRGB(180, 60, 60)
+v21.Font = Enum.Font.Arcade
+v21.TextSize = 16
+Instance.new("UICorner", v21).CornerRadius = UDim.new(0, 4)
+local v22 = Instance.new("TextButton", v19)
+v22.Size = UDim2.new(0, 220, 0, 36)
+v22.Position = UDim2.new(0.5, -110, 0, 50)
+v22.BackgroundColor3 = Color3.fromRGB(60, 90, 60)
+v22.TextColor3 = Color3.new(1, 1, 1)
+v22.Font = Enum.Font.Arcade
+v22.TextSize = 16
+v22.Text = "ðŸŽ² Reroll Egg"
+Instance.new("UICorner", v22).CornerRadius = UDim.new(0, 4)
+v22.MouseButton1Click:Connect(function()
+if not v7 then return end
+v7 = false
+for _, v16 in pairs(v5) do
+local v23 = getPetForEgg(v16.v17)
+v16.currentPet = v23
+if v16.v12 then
+v16.v12.Text = string.format("%s | %s (Cooldown...)", v16.v17, v23)
+end
+end
+task.spawn(function()
+local v24 = tick()
+while tick() - v24 < v6 do
+local v25 = v6 - (tick() - v24)
+for _, v16 in pairs(v5) do
+if v16 and v16.v12 then
+v16.v12.Text = string.format("%s | %s (%.2fs)", v16.v17, v16.currentPet, v25)
+end
+end
+task.wait(0.1)
+end
+for _, v16 in pairs(v5) do
+if v16 and v16.v12 then
+v16.v12.Text = string.format("%s | %s", v16.v17, v16.currentPet)
+end
+end
+v7 = true
+end)
+end)
+local v26 = Instance.new("TextButton", v19)
+v26.Size = UDim2.new(0, 220, 0, 30)
+v26.Position = UDim2.new(0.5, -110, 0, 90)
+v26.BackgroundColor3 = Color3.fromRGB(90, 60, 60)
+v26.TextColor3 = Color3.new(1, 1, 1)
+v26.Font = Enum.Font.Arcade
+v26.TextSize = 14
+v26.Text = "ESP: ON"
+Instance.new("UICorner", v26).CornerRadius = UDim.new(0, 4)
+v26.MouseButton1Click:Connect(function()
+v3 = not v3
+v26.Text = "ESP: " .. (v3 and "ON" or "OFF")
+for _, v16 in pairs(v5) do
+local v13 = v16.egg:FindFirstChildWhichIsA("BasePart") or v16.egg.PrimaryPart
+if v3 then
+if not v16.v14 or not v16.v14.Parent then
+local v27 = createEspGui(v13, v16.v17 .. " | " .. v16.currentPet)
+v16.v14 = v27
+v16.v12 = v27:FindFirstChild("TextLabel")
+end
+if v13 and not v13:FindFirstChild("RedAura") then
+local v15 = Instance.new("SelectionBox")
+v15.Name = "RedAura"
+v15.Adornee = v13
+v15.LineThickness = 0.1
+v15.SurfaceTransparency = 0.7
+v15.Color3 = Color3.fromRGB(255, 0, 0)
+v15.Parent = v13
+end
+else
+if v16.v14 then v16.v14:Destroy() end
+if v13 and v13:FindFirstChild("RedAura") then
+v13.RedAura:Destroy()
+end
+end
+end
+end)
+local v28 = Instance.new("TextButton", v19)
+v28.Size = UDim2.new(0, 220, 0, 30)
+v28.Position = UDim2.new(0.5, -110, 0, 125)
+v28.BackgroundColor3 = Color3.fromRGB(90, 60, 90)
+v28.TextColor3 = Color3.new(1, 1, 1)
+v28.Font = Enum.Font.Arcade
+v28.TextSize = 14
+v28.Text = "Auto Reroll: OFF"
+Instance.new("UICorner", v28).CornerRadius = UDim.new(0, 4)
+v28.MouseButton1Click:Connect(function()
+v8 = not v8
+v28.Text = "Auto Reroll: " .. (v8 and "ON" or "OFF")
+end)
+task.spawn(function()
+while true do
+task.wait(v6)
+if v8 and v7 then
+v22:Activate()
+end
+end
+end)
+local v29 = Instance.new("TextLabel", v19)
+v29.Size = UDim2.new(1, 0, 0, 20)
+v29.Position = UDim2.new(0, 0, 1, -20)
+v29.BackgroundTransparency = 1
+v29.Text = "made by: Wolyoung"
+v29.Font = Enum.Font.Arcade
+v29.TextSize = 13
+v29.TextColor3 = Color3.fromRGB(200, 200, 200)
+local v30 = Instance.new("TextButton", v14)
+v30.Size = UDim2.new(0, 100, 0, 36)
+v30.Position = UDim2.new(0, 20, 0.5, -18)
+v30.Text = "Show UI"
+v30.BackgroundColor3 = Color3.fromRGB(45, 45, 70)
+v30.TextColor3 = Color3.new(1, 1, 1)
+v30.Font = Enum.Font.Arcade
+v30.TextSize = 16
+Instance.new("UICorner", v30).CornerRadius = UDim.new(0, 4)
+v30.Visible = false
+v21.MouseButton1Click:Connect(function()
+v19.Visible = false
+v30.Visible = true
+end)
+v30.MouseButton1Click:Connect(function()
+v19.Visible = true
+v30.Visible = false
+end)
